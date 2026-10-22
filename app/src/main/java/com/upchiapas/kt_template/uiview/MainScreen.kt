@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
@@ -32,7 +34,9 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    viewModel: SimuladorViewModel = viewModel()
+    viewModel: SimuladorViewModel = viewModel(),
+    darkTheme: Boolean = false,
+    onToggleTheme: (Boolean) -> Unit = {}
 ) {
     val estado by viewModel.uiState.collectAsState()
     val historialCreditos by viewModel.historialCreditos.collectAsState()
@@ -51,6 +55,14 @@ fun MainScreen(
                 TopAppBar(
                     title = { Text("CrediCalc", fontWeight = FontWeight.Bold) },
                     actions = {
+                        // Botón para alternar Modo Oscuro / Claro
+                        IconButton(onClick = { onToggleTheme(!darkTheme) }) {
+                            Icon(
+                                imageVector = if (darkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                                contentDescription = "Cambiar modo oscuro/claro"
+                            )
+                        }
+                        // Botón para ver historial
                         IconButton(onClick = { showHistorial = true }) {
                             Icon(Icons.Default.List, contentDescription = "Ver Historial")
                         }
