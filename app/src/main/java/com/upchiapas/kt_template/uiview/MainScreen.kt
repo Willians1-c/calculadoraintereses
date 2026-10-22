@@ -158,19 +158,19 @@ fun MainScreen(
                         Text("Calcular")
                     }
 
-                    // Botón para Guardar en Base de Datos y abrir el historial
+                    // Botón para Guardar en Base de Datos y abrir el historial (Cuadrito Verde Lima)
                     IconButton(
                         onClick = {
                             viewModel.guardarSimulacion()
                             Toast.makeText(contexto, "Simulación guardada en el historial", Toast.LENGTH_SHORT).show()
                             showHistorial = true
                         },
-                        modifier = Modifier.background(Color(0xFFE3F2FD), shape = RoundedCornerShape(8.dp))
+                        modifier = Modifier.background(Color(0xFFDCEDC8), shape = RoundedCornerShape(8.dp))
                     ) {
                         Icon(
                             imageVector = Icons.Default.Save,
                             contentDescription = "Guardar simulación",
-                            tint = Color(0xFF1976D2)
+                            tint = Color(0xFF33691E)
                         )
                     }
                 }
@@ -263,13 +263,14 @@ fun FilaAmortizacionItem(mes: Int, cuota: String, cap: String, int: String, sald
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Cuadrito verde lima para el número de mes
         Surface(
             shape = RoundedCornerShape(50),
-            color = Color(0xFFEEEEEE),
+            color = Color(0xFFDCEDC8),
             modifier = Modifier.size(40.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Text(mes.toString(), color = Color.Gray)
+                Text(mes.toString(), color = Color(0xFF33691E), fontWeight = FontWeight.Bold)
             }
         }
 
