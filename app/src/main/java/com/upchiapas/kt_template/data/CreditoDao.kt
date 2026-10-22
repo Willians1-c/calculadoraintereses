@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CreditoDao {
-
+    
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarCredito(credito: CreditoEntity)

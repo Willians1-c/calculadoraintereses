@@ -2,32 +2,39 @@ package com.upchiapas.kt_template.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.upchiapas.kt_template.data.repository.CreditoRepository
+import com.upchiapas.kt_template.model.CreditoEntity
 import com.upchiapas.kt_template.model.PagoMensual
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlin.math.pow
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import com.upchiapas.kt_template.data.CreditoDao
-import com.upchiapas.kt_template.model.CreditoEntity
+import kotlin.math.pow
 
-class SimuladorViewModel(private val dao: CreditoDao) : ViewModel() {
-
+class SimuladorViewModel(private val repository: CreditoRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SimuladorUiState())
     val uiState: StateFlow<SimuladorUiState> = _uiState.asStateFlow()
 
+    val historialCreditos: StateFlow<List<CreditoEntity>> = repository.obtenerHistorial()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     init {
         calcularAmortizacion()
     }
+
     fun guardarSimulacion() {
         val estado = _uiState.value
 
-
         if (estado.cuotaMensual <= 0.0) return
-
 
         viewModelScope.launch {
             val nuevoRegistro = CreditoEntity(
@@ -40,7 +47,13 @@ class SimuladorViewModel(private val dao: CreditoDao) : ViewModel() {
                 totalIntereses = estado.totalIntereses,
                 totalPagar = estado.totalPagar
             )
-            dao.insertarCredito(nuevoRegistro)
+            repository.insertarCredito(nuevoRegistro)
+        }
+    }
+
+    fun borrarHistorial() {
+        viewModelScope.launch {
+            repository.borrarTodo()
         }
     }
 
@@ -111,26 +124,21 @@ class SimuladorViewModel(private val dao: CreditoDao) : ViewModel() {
         var sumaTotalPagado = 0.0
 
         for (mes in 1..meses) {
-            // --- INICIO DE LÓGICA DE INTERÉS VARIABLE ---
             var cuotaMesActual = cuotaMensualBase
             var tasaMensualMes = tasaMensual
 
             if (!estadoActual.esInteresFijo) {
-                // Simulamos que la tasa anual sube 0.2% cada mes por la inflación
                 val tasaAnualDinamica = tasaAnual + (mes * 0.2)
                 tasaMensualMes = (tasaAnualDinamica / 100) / 12.0
 
-                // Recalculamos la cuota con el nuevo interés y los meses que faltan
                 val mesesRestantes = meses - mes + 1
                 val factorDinamico = (1.0 + tasaMensualMes).pow(mesesRestantes)
                 cuotaMesActual = saldoRestante * (tasaMensualMes * factorDinamico) / (factorDinamico - 1.0)
             }
-            // --- FIN DE LÓGICA DE INTERÉS VARIABLE ---
 
             val interesMes = saldoRestante * tasaMensualMes
-            var capitalMes = cuotaMesActual - interesMes // Usamos la cuota actual (fija o dinámica)
+            var capitalMes = cuotaMesActual - interesMes
 
-            // Sumamos el aporte extra directo al pago de capital
             capitalMes += aporteExtraMensual
 
             if (capitalMes > saldoRestante) {
@@ -164,7 +172,7 @@ class SimuladorViewModel(private val dao: CreditoDao) : ViewModel() {
 
         _uiState.update {
             it.copy(
-                cuotaMensual = cuotaMensualBase, // Mantenemos la cuota base para mostrarla arriba
+                cuotaMensual = cuotaMensualBase,
                 cuotaTotalConAporte = cuotaTotalConAporte,
                 totalIntereses = sumaIntereses,
                 totalPagar = sumaTotalPagado,
@@ -175,11 +183,12 @@ class SimuladorViewModel(private val dao: CreditoDao) : ViewModel() {
         }
     }
 }
-class SimuladorViewModelFactory(private val dao: CreditoDao) : ViewModelProvider.Factory {
+
+class SimuladorViewModelFactory(private val repository: CreditoRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(SimuladorViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return SimuladorViewModel(dao) as T
+            return SimuladorViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -7,7 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.upchiapas.kt_template.data.AppDatabase
-import com.upchiapas.kt_template.ui.components.MainScreen
+import com.upchiapas.kt_template.data.repository.CreditoRepositoryImpl
+import com.upchiapas.kt_template.uiview.MainScreen
 import com.upchiapas.kt_template.ui.theme.Kt_templateTheme
 import com.upchiapas.kt_template.viewmodel.SimuladorViewModel
 import com.upchiapas.kt_template.viewmodel.SimuladorViewModelFactory
@@ -23,9 +24,12 @@ class MainActivity : ComponentActivity() {
                 // Instanciamos la base de datos
                 val database = AppDatabase.obtenerBaseDeDatos(context)
 
-                // Le pasamos el DAO al ViewModel a través de nuestro Factory
+                // Creamos el repositorio
+                val repository = CreditoRepositoryImpl(database.creditoDao())
+
+                // Le pasamos el repositorio al ViewModel a través de nuestro Factory
                 val simuladorViewModel: SimuladorViewModel = viewModel(
-                    factory = SimuladorViewModelFactory(database.creditoDao())
+                    factory = SimuladorViewModelFactory(repository)
                 )
 
                 // Llamamos a la pantalla pasándole el ViewModel configurado
