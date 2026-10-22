@@ -145,34 +145,26 @@ fun MainScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // --- BOTONES: CALCULAR Y GUARDAR ---
-                Row(
+                // --- BOTÓN: GUARDAR SIMULACIÓN ---
+                Button(
+                    onClick = {
+                        viewModel.guardarSimulacion()
+                        Toast.makeText(contexto, "Simulación guardada en el historial", Toast.LENGTH_SHORT).show()
+                        showHistorial = true
+                    },
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFDCEDC8),
+                        contentColor = Color(0xFF33691E)
+                    )
                 ) {
-                    Button(
-                        onClick = { viewModel.calcularAmortizacion() },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Calcular")
-                    }
-
-                    // Botón para Guardar en Base de Datos y abrir el historial (Cuadrito Verde Lima)
-                    IconButton(
-                        onClick = {
-                            viewModel.guardarSimulacion()
-                            Toast.makeText(contexto, "Simulación guardada en el historial", Toast.LENGTH_SHORT).show()
-                            showHistorial = true
-                        },
-                        modifier = Modifier.background(Color(0xFFDCEDC8), shape = RoundedCornerShape(8.dp))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = "Guardar simulación",
-                            tint = Color(0xFF33691E)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Save,
+                        contentDescription = "Guardar simulación",
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text("Guardar Simulación", fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
